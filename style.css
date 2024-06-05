@@ -1,0 +1,36 @@
+a{
+    color:white;
+}
+/* Halil hocanın istediği kısımlar*/
+/* Genel stil */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Mobil cihazlar için */
+@media (max-width: 600px) {
+    .container {
+        width: 100%;
+        padding: 10px;
+    }
+    
+    .task-item {
+        font-size: 1.2em;
+    }
+}
+
+/* Tabletler ve daha büyük ekranlar için */
+@media (min-width: 601px) {
+    .container {
+        width: 50%;
+        margin: 0 auto;
+    }
+    
+    .task-item {
+        font-size: 1em;
+    }
+}
+/* istenen yerler bitişi*/
