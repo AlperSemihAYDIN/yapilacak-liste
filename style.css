@@ -1,8 +1,8 @@
-a{
-    color:white;
+a {
+    color: white;
 }
-/* Halil hocanın istediği kısımlar*/
-/* Genel stil */
+
+/* Genel Stil */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -10,7 +10,7 @@ body {
     box-sizing: border-box;
 }
 
-/* Mobil cihazlar için */
+/* Mobil Cihazlar İçin */
 @media (max-width: 600px) {
     .container {
         width: 100%;
@@ -22,7 +22,7 @@ body {
     }
 }
 
-/* Tabletler ve daha büyük ekranlar için */
+/* Tabletler ve Daha Büyük Ekranlar İçin */
 @media (min-width: 601px) {
     .container {
         width: 50%;
@@ -33,4 +33,20 @@ body {
         font-size: 1em;
     }
 }
-/* istenen yerler bitişi*/
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.delete-item {
+    color: #dc3545;
+    cursor: pointer;
+}
+
+/* Tamamlanmış görevler için stil */
+.completed {
+    text-decoration: line-through;
+    color: #d3d3d3;
+}
