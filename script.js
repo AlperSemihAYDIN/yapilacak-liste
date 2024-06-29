@@ -1,107 +1,128 @@
-const form=document.querySelector("form");
-const input=document.querySelector("#txtTaskName");
-const btnAddNewTask=document.querySelector("#btnAddNewTask");
-const btnDeleteAll=document.querySelector("#btnDeleteAll");
-const taskList=document.querySelector("#task-list");
+const form = document.querySelector("form");
+const inputTaskName = document.querySelector("#txtTaskName");
+const inputTaskDate = document.querySelector("#txtTaskDate");
+const inputTaskTime = document.querySelector("#txtTaskTime");
+const btnAddNewTask = document.querySelector("#btnAddNewTask");
+const btnDeleteAll = document.querySelector("#btnDeleteAll");
+const taskList = document.querySelector("#task-list");
 let todos;
 
-// load items
+// Listeyi yükle
 loadItems();
 
+// Olay dinleyicileri
 eventListeners();
 
-function eventListeners(){
-    // submit event
-    form.addEventListener("submit",addNewItem)
-    // delete an item
-    taskList.addEventListener("click",deleteItem);
-    // delete all item
-    btnDeleteAll.addEventListener("click",deleteAllItems);
-
+function eventListeners() {
+    // Görev Ekleme
+    form.addEventListener("submit", addNewItem);
+    // Görev Silme
+    taskList.addEventListener("click", deleteItem);
+    // Görev Tamamlama
+    taskList.addEventListener("change", toggleComplete);
+    // Tüm Görevleri Silme
+    btnDeleteAll.addEventListener("click", deleteAllItems);
 }
 
-function loadItems(){
-    todos=getItemsFromLS();
-    todos.forEach(function(item){
-        createItems(item);
-    })
+function loadItems() {
+    todos = getItemsFromLS();
+    todos.forEach(function(item) {
+        createItems(item.name, item.date, item.time, item.completed);
+    });
 }
 
-function getItemsFromLS(){
-    if(localStorage.getItem("todos")===null){
-        todos=[];
-    }
-    else{
-        todos=JSON.parse(localStorage.getItem("todos"));
+function getItemsFromLS() {
+    if (localStorage.getItem("todos") === null) {
+        todos = [];
+    } else {
+        todos = JSON.parse(localStorage.getItem("todos"));
     }
     return todos;
 }
-function setItemToLS(newTodo){
-    todos=getItemsFromLS();
+
+function setItemToLS(newTodo) {
+    todos = getItemsFromLS();
     todos.push(newTodo);
-    localStorage.setItem("todos",JSON.stringify(todos));
+    localStorage.setItem("todos", JSON.stringify(todos));
 }
 
-function createItems(newTodo){
-// li oluşturma
-const li=document.createElement("li");
-li.className="list-group-item list-group-item-secondary";
-li.appendChild(document.createTextNode(newTodo));
-// a oluşturma
-
-const a= document.createElement("a");
-a.classList="delete-item float-right";
-a.setAttribute("href","#");
-a.innerHTML='<i class="fas fa-times"></i>';
-li.appendChild(a);
-taskList.appendChild(li);
+function createItems(taskName, taskDate, taskTime, completed = false) {
+    const li = document.createElement("li");
+    li.className = `list-group-item list-group-item-secondary d-flex justify-content-between align-items-center ${completed ? 'completed' : ''}`;
+    li.innerHTML = `
+        <div>
+            <input type="checkbox" class="mr-2" ${completed ? 'checked' : ''}>
+            <strong>${taskName}</strong> - <em>${taskDate} ${taskTime}</em>
+        </div>
+        <a href="#" class="delete-item">
+            <i class="fas fa-times"></i>
+        </a>`;
+    taskList.appendChild(li);
 }
 
-function addNewItem(e){
-    if(input.value===''){
-        alert("bir eleman eklemelisin")
-    }
-    //create item
-    createItems(input.value);
-    setItemToLS(input.value);
-
-
-    input.value="";
-
+function addNewItem(e) {
     e.preventDefault();
+    if (inputTaskName.value === '' || inputTaskDate.value === '' || inputTaskTime.value === '') {
+        alert("Bir görev adı, tarih ve saat seçmelisiniz.");
+        return;
+    }
 
-}
-// Eleman silme
-function deleteItem(e){
-     if(e.target.className==="fas fa-times"){
-       
-        e.target.parentElement.parentElement.remove();
-        deleteTodoFromStorage(e.target.parentElement.parentElement.textContent);
-    }
-   e.preventDefault();
+    // Yeni Görev Oluştur
+    const newTodo = {
+        name: inputTaskName.value,
+        date: inputTaskDate.value,
+        time: inputTaskTime.value,
+        completed: false
+    };
+    createItems(newTodo.name, newTodo.date, newTodo.time, newTodo.completed);
+    setItemToLS(newTodo);
+
+    // Formu Temizle
+    inputTaskName.value = "";
+    inputTaskDate.value = "";
+    inputTaskTime.value = "";
 }
 
-function deleteTodoFromStorage(deletetodo){
-let todos=getItemsFromLS();
-todos.forEach(function(todo,index){
-    if(todo===deletetodo){
-        todos.splice(index,1);
+function deleteItem(e) {
+    if (e.target.classList.contains("fa-times")) {
+        const taskItem = e.target.parentElement.parentElement;
+        deleteTodoFromStorage(taskItem);
+        taskItem.remove();
     }
-})
-localStorage.setItem("todos",JSON.stringify(todos));
+    e.preventDefault();
 }
-// Tüm Elemanları Silmek
-function deleteAllItems(e){
-    // if(confirm("Tüm elemanları silmek istediğinize emin misiniz?")){
-    //     taskList.childNodes.forEach(function(item){
-    //         if(item.nodeType===1){
-    //             item.remove();
-    //         }
-    //     })
-    // }
-    while(taskList.firstChild){
-        taskList.removeChild(taskList.firstChild);
+
+function deleteTodoFromStorage(taskItem) {
+    let todos = getItemsFromLS();
+    const taskName = taskItem.querySelector('strong').textContent;
+    const taskDateTime = taskItem.querySelector('em').textContent;
+    todos = todos.filter(todo => `${todo.name} - ${todo.date} ${todo.time}` !== `${taskName} - ${taskDateTime}`);
+    localStorage.setItem("todos", JSON.stringify(todos));
+}
+
+function deleteAllItems(e) {
+    e.preventDefault();
+    if (confirm("Tüm elemanları silmek istediğinize emin misiniz?")) {
+        while (taskList.firstChild) {
+            taskList.removeChild(taskList.firstChild);
+        }
+        localStorage.clear();
     }
-    localStorage.clear();
-    //taskList.innerHTML="";
+}
+
+function toggleComplete(e) {
+    if (e.target.type === "checkbox") {
+        const taskItem = e.target.parentElement.parentElement;
+        taskItem.classList.toggle('completed');
+        const taskName = taskItem.querySelector('strong').textContent;
+        const taskDateTime = taskItem.querySelector('em').textContent;
+        let todos = getItemsFromLS();
+        todos.forEach(function(todo) {
+            const todoText = `${todo.name} - ${todo.date} ${todo.time}`;
+            if (todoText === `${taskName} - ${taskDateTime}`) {
+                todo.completed = e.target.checked;
+            }
+        });
+        localStorage.setItem("todos", JSON.stringify(todos));
+    }
 }
